@@ -1,0 +1,25 @@
+This script notifies the user of changes to tracked web sites. This is particularly useful for sites which don't have RSS feeds.
+
+This is done by hashing the content of the page and comparing it to what the hash was the last time the site was checked. If the hashes differ then the site has changed.
+
+Note: the hash function being used is MD5. Since this script is just using the hash to identify changes, MD5 is good enough. <sarcasm>If people start maliciously crafting their site to trick this script into thinking the site has not changed, then I'll switch it to SHA-512 or something.</sarcasm>
+
+Sample usage:
+
+# Display options:
+$ site-change-notify --help
+
+# Say we want to track changes to example.com. To tell the script to track it:
+$ site-change-notify --add example.com
+Tracking site: example.com
+
+# If example.com hasn't changed...
+$ site-change-notify
+# ...prints nothing
+
+# If we wait a bit and example.com changes...
+$ site-change-notify
+Site changed: example.com
+
+# If we don't want to track changes to example.com, let's remove it:
+$ site-change-notify --remove example.com
