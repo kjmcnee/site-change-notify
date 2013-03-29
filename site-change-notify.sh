@@ -22,6 +22,15 @@ site_hash_file="${HOME}/.site-change-notify-hashes"
 # if it doesn't exist, create it
 [ -f "${site_hash_file}" ] || > "${site_hash_file}"
 
+# select the command for the hash (Mac uses md5; Linux uses md5sum)
+if type md5 &> /dev/null ; then
+    hash_cmd='md5'
+elif type md5sum &> /dev/null ; then
+    hash_cmd='md5sum'
+else
+    echo "Error: Unable to find a command which creates md5 hashes." >&2
+    exit 1
+fi
 
 
 # hashes the site's contents and stores result in variable ${hash}
@@ -34,7 +43,7 @@ site_hash(){
         echo "Query failed for site ${1}" >&2
         return 1
     else
-        hash=$(echo ${content} | md5)
+        hash=$(echo ${content} | ${hash_cmd} | cut -d" " -f1)
         return 0
     fi
 }
@@ -120,7 +129,11 @@ while read line; do
             echo Site changed: ${site}
 
             # update hash in file
-            [ ${just_notify} -eq 1 ] && sed -i "" "s/${prev_hash}/${hash}/g" "${site_hash_file}"
+            if [ ${just_notify} -eq 1 ] ; then
+                cp "${site_hash_file}"{,.bak}
+                sed "s/${prev_hash}/${hash}/g" "${site_hash_file}.bak" > "${site_hash_file}"
+                rm "${site_hash_file}.bak"
+            fi
         fi
     elif [ ${fatal} -eq 0 ]; then
         echo "Aborting" >&2
